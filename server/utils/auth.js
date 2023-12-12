@@ -5,25 +5,29 @@ const secret = process.env.SECRET;
 const expiration = '2h';
 
 module.exports = {
-  authMiddleware: function ({ req }) {
-    let token = req.body.token || req.query.token || req.headers.authorization;
+  authMiddleware: function (context) {
+    let token;
+    if (context.req) {
+      // Extract the token from the incoming request
+      token = context.req.body.token || context.req.query.token || context.req.headers.authorization;
 
-    if (req.headers.authorization) {
-      token = token.split(' ').pop().trim();
+      if (context.req.headers.authorization) {
+        token = token.split(' ').pop().trim();
+      }
     }
 
     if (!token) {
-      return req;
+      return context;
     }
 
     try {
       const { data } = jwt.verify(token, secret, { maxAge: expiration });
-      req.user = data;
+      context.req.user = data;
     } catch {
       console.log('Invalid token');
     }
 
-    return req;
+    return context;
   },
   signToken: function ({ username, email, _id }) {
     const payload = { username, email, _id };
