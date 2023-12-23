@@ -1,19 +1,25 @@
-import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
+import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
+import { getToken } from "../utils/auth"; // Import your auth utility function
+
+// Environment variable for the API URL
+const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 // HTTP connection to the GraphQL API
 const httpLink = createHttpLink({
-  uri: 'http://localhost:4000/graphql', // Your GraphQL server URI
+  uri: `${apiURL}/graphql`, // Dynamically set the GraphQL server URI
 });
 
 // Middleware to attach the token to requests
 const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem('id_token');
+  // Get the authentication token using your utility function
+  const token = getToken();
+  // Return the headers to the context so httpLink can read them
   return {
     headers: {
       ...headers,
-      authorization: token ? `Bearer ${token}` : '',
-    }
+      authorization: token ? `Bearer ${token}` : "",
+    },
   };
 });
 
